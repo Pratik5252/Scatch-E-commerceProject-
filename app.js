@@ -2,28 +2,32 @@ const cookieParser = require("cookie-parser");
 const express = require("express");
 const app = express();
 const path = require("path");
+require("dotenv").config();
+const expressSession = require("express-session");
+const flash = require("connect-flash");
 
 const ownersRouter = require("./routes/ownersRouter");
 const usersRouter = require("./routes/usersRouter");
 const productsRouter = require("./routes/productsRouter");
-
-const userModel = require("./models/user-model");
-const productModel = require("./models/product-model");
-const ownerModel = require("./models/owners-model");
+const indexRouter = require("./routes/index");
 
 const db = require("./config/mongoose-connection");
 
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(
+  expressSession({
+    secret: process.env.EXPRESS_SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+app.use(flash());
 app.use(express.static(path.join(__dirname, "public")));
-
 app.set("view engine", "ejs");
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-
+app.use("/", indexRouter);
 app.use("/owners", ownersRouter);
 app.use("/users", usersRouter);
 app.use("/products", productsRouter);
